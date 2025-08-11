@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nutrinium</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="/img/Nutrinium - icon.ico" type="image/x-icon">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <header class="app-header">
+            <div class="container">
+                <div class="title-container">
+                    <img src="./img/Nutrinium - SVG.svg" alt="Nutrinium Logo" class="title-svg">
+                    <h1>Nutrinium</h1>
+                </div>
+                <p>Sua ferramenta completa de nutrição e avaliação física</p>
+            </div>
+        </header>
+
+        <nav class="navigation">
+            <div class="container nav-container">
+                <button data-tab="tmb" class="nav-button active">TMB/GET</button>
+                <button data-tab="macros" class="nav-button">Dieta</button>
+                <button data-tab="assessment" class="nav-button">Avaliação Física</button>
+                <button data-tab="history" class="nav-button">Histórico</button>
+            </div>
+        </nav>
+
+        <main class="container">
+            <section id="tmb" class="calculator-section active">
+                <div class="card">
+                    <h2>Calculadora de Metabolismo Basal e Gasto Calórico</h2>
+                    <div class="form-grid-large">
+                        <div class="form-column">
+                            <div class="form-grid">
+                                <div><label>Idade</label><input type="number" id="tmb-age" placeholder="Ex: 30"><div class="error-message" data-for="tmb-age"></div></div>
+                                <div><label>Sexo</label><select id="tmb-gender"><option value="male">Masculino</option><option value="female">Feminino</option></select></div>
+                            </div>
+                            <div class="form-grid">
+                                <div><label>Peso (kg)</label><input type="number" id="tmb-weight" placeholder="Ex: 70.5" step="0.1"><div class="error-message" data-for="tmb-weight"></div></div>
+                                <div><label>Altura (cm)</label><input type="number" id="tmb-height" placeholder="Ex: 175"><div class="error-message" data-for="tmb-height"></div></div>
+                            </div>
+                             <div><label>Nível de Atividade Física</label><select id="tmb-activity"><option value="1.2">Sedentário (pouco ou nenhum exercício)</option><option value="1.375">Levemente ativo (1-3 dias/semana)</option><option value="1.55">Moderadamente ativo (3-5 dias/semana)</option><option value="1.725">Muito ativo (6-7 dias/semana)</option><option value="1.9">Extremamente ativo (trabalho físico)</option></select></div>
+                            <button id="calculate-tmb" class="btn btn-blue">Calcular</button>
+                        </div>
+                        <div id="tmb-result-container" class="form-column" style="display: none;">
+                            <h3>Seu Resultado Metabólico</h3>
+                            <div class="result-summary">
+                                <h4>Taxa Metabólica Basal (TMB)</h4>
+                                <p>É a quantidade de calorias que seu corpo queima em repouso.</p>
+                                <p class="calories-value" id="tmb-value">0 kcal/dia</p>
+                            </div>
+                             <div class="result-summary">
+                                <h4>Gasto Energético Total (GET)</h4>
+                                <p>É uma estimativa de quantas calorias você queima por dia, incluindo atividades.</p>
+                                <p class="calories-value" id="tdee-value">0 kcal/dia</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="macros" class="calculator-section" style="display: none">
+                <div class="card">
+                <h2>Calculadora de Dieta e Macros</h2>
+                 <div class="form-grid-large">
+                     <div class="form-column">
+                        <div class="form-grid">
+                            <div><label>Idade</label><input type="number" id="macro-age" placeholder="Ex: 30"><div class="error-message" data-for="macro-age"></div></div>
+                            <div><label>Sexo</label><select id="macro-gender"><option value="male">Masculino</option><option value="female">Feminino</option></select></div>
+                        </div>
+                         <div class="form-grid">
+                            <div><label>Peso (kg)</label><input type="number" id="macro-weight" placeholder="Ex: 70.5" step="0.1"><div class="error-message" data-for="macro-weight"></div></div>
+                            <div><label>Altura (cm)</label><input type="number" id="macro-height" placeholder="Ex: 175"><div class="error-message" data-for="macro-height"></div></div>
+                        </div>
+                         <div><label>% Gordura Corporal (opcional)</label><input type="number" id="macro-bodyfat" placeholder="Ex: 15.5" step="0.1"><p class="field-description">Se informado, será usado para cálculo mais preciso.</p></div>
+                         <div><label>Nível de Atividade Física</label><select id="macro-activity"><option value="1.2">Sedentário</option><option value="1.375">Levemente ativo</option><option value="1.55">Moderadamente ativo</option><option value="1.725">Muito ativo</option><option value="1.9">Extremamente ativo</option></select></div>
+                         <div id="macro-goal-inputs"><label>Objetivo</label><div class="radio-group"><label><input type="radio" name="goal" value="weight-loss" checked> Emagrecimento</label><label><input type="radio" name="goal" value="definition"> Definição</label><label><input type="radio" name="goal" value="muscle-gain"> Hipertrofia</label></div></div>
+                        <div class="toggle-container"><label>Personalizar Distribuição de Macros</label><div class="toggle-switch" id="macro-use-custom-toggle"><div class="toggle-thumb"></div></div></div>
+                         <div id="macro-custom-inputs" style="display: none;" class="custom-macros-container">
+                             <h4>Distribuição Personalizada (%)</h4>
+                             <div class="form-grid-tri">
+                                <div><label>Proteínas</label><input type="number" id="macro-custom-protein" value="25" min="0" max="100"></div>
+                                <div><label>Carbos</label><input type="number" id="macro-custom-carbs" value="45" min="0" max="100"></div>
+                                <div><label>Gorduras</label><input type="number" id="macro-custom-fat" value="30" min="0" max="100"></div>
+                             </div>
+                             <div id="macro-sum-validation" class="macro-sum">Total: 100%</div>
+                         </div>
+                        <button id="calculate-macros" class="btn btn-green">Calcular Dieta</button>
+                    </div>
+                     <div id="macro-result-container" class="form-column" style="display: none;">
+                        <h3>Sua Dieta Personalizada</h3>
+                        <div class="result-calories"><p>Calorias Diárias</p><p id="macro-calories" class="calories-value">0</p><p>kcal/dia</p></div>
+                        <div class="macros-details">
+                            <div class="macro-item"><div><p>Proteínas</p><p id="macro-protein" class="macro-grams">0g/dia</p></div><div><p id="macro-protein-kcal" class="macro-kcal-protein">0kcal</p><p>4kcal/g</p></div></div>
+                            <div class="macro-item"><div><p>Carboidratos</p><p id="macro-carbs" class="macro-grams">0g/dia</p></div><div><p id="macro-carbs-kcal" class="macro-kcal-carbs">0kcal</p><p>4kcal/g</p></div></div>
+                            <div class="macro-item"><div><p>Gorduras</p><p id="macro-fat" class="macro-grams">0g/dia</p></div><div><p id="macro-fat-kcal" class="macro-kcal-fat">0kcal</p><p>9kcal/g</p></div></div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </section>
+
+            <section id="assessment" class="calculator-section" style="display: none">
+                <div class="card">
+                <h2>Avaliação Física Completa</h2>
+                <div class="form-grid-large">
+                    <div class="form-column">
+                        <div class="form-section">
+                            <h3>Dados Pessoais</h3>
+                            <div><input type="text" id="assessment-name" placeholder="Nome Completo *" /><div class="error-message" data-for="assessment-name"></div></div>
+                            <div class="form-grid">
+                                <div><input type="number" id="assessment-age" placeholder="Idade *" /><div class="error-message" data-for="assessment-age"></div></div>
+                                <div><label for="assessment-gender" class="hidden-label">Sexo</label><select id="assessment-gender"><option value="male">Masculino</option><option value="female">Feminino</option></select></div>
+                            </div>
+                            <div class="form-grid">
+                                <div><input type="number" id="assessment-weight" placeholder="Peso (kg) *" step="0.1" /><div class="error-message" data-for="assessment-weight"></div></div>
+                                <div><input type="number" id="assessment-height" placeholder="Altura (cm) *" /><div class="error-message" data-for="assessment-height"></div></div>
+                            </div>
+                        </div>
+                        <div class="form-section">
+                            <h3>Método de Avaliação</h3>
+                            <select id="assessment-method"><option value="pollock3">Pollock 3 Dobras</option><option value="pollock4">Pollock 4 Dobras</option><option value="pollock7">Pollock 7 Dobras</option><option value="durnin">Durnin & Womersley</option><option value="faulkner">Faulkner</option><option value="slaughter">Slaughter (Crianças)</option><option value="guedes">Guedes</option></select>
+                        </div>
+                        <div class="form-section">
+                            <h3>Medidas das Dobras Cutâneas (mm)</h3>
+                            <div id="assessment-fields-container" class="form-grid"></div>
+                        </div>
+                        <div class="button-group">
+                            <button id="calculate-assessment" class="btn btn-indigo">Calcular Avaliação</button>
+                            <button id="save-assessment" class="btn btn-gray" style="display: none;">Salvar Avaliação</button>
+                        </div>
+                    </div>
+                    <div id="assessment-result-container" class="form-column" style="display: none;">
+                        <h3>Resultado da Avaliação</h3>
+                        <div class="result-bodyfat"><p>Percentual de Gordura Corporal</p><p id="assessment-bodyfat-value" class="bodyfat-value">0.00%</p><p id="assessment-bodyfat-classification" class="bodyfat-classification"></p></div>
+                        <div class="result-summary"><h4>Resumo da Avaliação</h4><p><strong>Avaliado:</strong> <span id="summary-name"></span></p><p><strong>Data:</strong> <span id="summary-date"></span></p><p><strong>Método:</strong> <span id="summary-method"></span></p><p><strong>IMC:</strong> <span id="summary-imc"></span></p></div>
+                        <div class="result-measurements"><h4>Medidas Coletadas (mm)</h4><ul id="summary-measurements"></ul></div>
+                        <button id="download-pdf" class="btn btn-green">Baixar Relatório PDF</button>
+                    </div>
+                </div>
+                </div>
+            </section>
+            
+            <section id="history" class="calculator-section" style="display: none;">
+                <div class="card">
+                    <h2>Histórico de Progresso</h2>
+                    <div id="history-content">
+                        <div class="chart-container">
+                            <canvas id="progress-chart"></canvas>
+                        </div>
+                        <h3>Todas as Avaliações Salvas</h3>
+                        <div class="table-container">
+                            <table id="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Peso (kg)</th>
+                                        <th>IMC</th>
+                                        <th>% Gordura</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
+                            </table>
+                        </div>
+                         <p id="no-history-message" style="display: none; text-align: center; margin-top: 2rem;">Nenhuma avaliação salva. Faça sua primeira 'Avaliação Física' e clique em "Salvar" para começar a acompanhar seu progresso.</p>
+                         <p id="cookie-warning" style="text-align: center; margin-top: 0.2rem; font-size: 0.9rem; color: #cc1212;">ATENÇÃO</p>
+                         <p id="cookie-warning" style="text-align: center; margin-top: 0.2rem; font-size: 0.9rem; color: #cc1212;">Seu Histórico de Avaliações são salvos nos cookies do navegador, caso apague seu Histórico de navegação eles serão removidos</p>
+                </div>
+            </section>
+        </main>
+
+        <footer class="app-footer">
+            <div class="container">
+                <div class="title-container footer-title">
+                    <img src="./img/Nutrinium - SVG.svg" alt="Nutrinium Logo" class="footer-svg">
+                    <span>Nutrinium</span>
+                </div>
+                <p>Sua ferramenta completa de nutrição e avaliação física</p>
+                <div class="footer-details"><p><strong>Funcionalidades:</strong> TMB/GET • Dieta • % BF • Avaliação Física</p><p><strong>Métodos de Avaliação:</strong> Pollock • Durnin & Womersley • Faulkner • Slaughter • Guedes</p><div class="footer-bottom"><p>&copy; Anderson Klein | Nutrinium&reg; - Todos os direitos reservados</p><p>⚠️ Este sistema é apenas informativo. Consulte sempre um profissional da saúde.</p></div></div>
+            </div>
+        </footer>
+    </div>
+    
+    <div id="toast-container"></div>
+    <div id="loading-spinner" class="spinner-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <p>Gerando PDF...</p>
+    </div>
+    <canvas id="pie-chart-temp" style="display: none; width: 300px; height: 300px;"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>
